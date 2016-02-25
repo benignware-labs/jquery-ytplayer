@@ -68,21 +68,26 @@
       player = null,
       playerReady = false,
       triggerPlay = false,
-      opts = {};
+      opts = {},
+      pauseTimeout = null;
       
       
     function setState(newState) {
+      //
       if (newState !== state) {
         if (opts.events && opts.events.onStateChange) {
-          opts.events.onStateChange.apply(this, arguments);
+          opts.events.onStateChange.apply(this, [{data: newState}]);
         }
-        state = newState;
+      }
+      var playerState = player && player.getPlayerState && player.getPlayerState();
+      if (newState !== state || newState !== playerState) {
         states.forEach(function(name, index) {
           if (name) {
-            $element.toggleClass(opts.playerStateClassPrefix + name, state === index - 1);
+            $element.toggleClass(opts.playerStateClassPrefix + name, newState === index - 1);
           }
         });
       }
+      state = newState;
     }
       
     function updatePlayer(options) {
@@ -149,6 +154,7 @@
      */
     this.playVideo = function() {
       // Start video
+      window.clearTimeout(pauseTimeout);
       triggerPlay = true;
       if (!playerReady) {
         setState(3);
@@ -164,6 +170,7 @@
      */
     this.stopVideo = function() {
       triggerPlay = false;
+      window.clearTimeout(pauseTimeout);
       // Stop video
       setState(-1);
       if (player && player.stopVideo) {
@@ -178,10 +185,13 @@
     this.pauseVideo = function() {
       setState(2);
       triggerPlay = false;
-      // Start video
-      if (player && player.pauseVideo) {
-        player.pauseVideo();
-      }
+      // Pause video
+      window.clearTimeout(pauseTimeout);
+      pauseTimeout = window.setTimeout(function() {
+        if (!triggerPlay && state === 2 && player && player.getPlayerState && player.getPlayerState() !== 2 && player.pauseVideo) {
+          player.pauseVideo();
+        }
+      }, 50);
     };
     
     /**
@@ -204,7 +214,8 @@
      */
     this.getPlayerState = function() {
       // Start video
-      return player && player.getPlayerState ? player.getPlayerState() : state;
+      //return player && player.getPlayerState ? player.getPlayerState() : state;
+      return state;
     };
     
     
