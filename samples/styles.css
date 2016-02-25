@@ -1,0 +1,44 @@
+.yt-player {
+  position: relative;
+  padding-bottom: 56.25%; /* Default for 1600x900 videos 16:9 ratio*/
+  padding-top: 0px;
+  height: 0;
+  overflow: hidden;
+}
+.yt-controls {
+  padding: 15px;
+  position: absolute;
+  bottom: 0;
+}
+
+.yt-splash {
+  background: #fff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease, visibility 0s 0s ease;
+}
+
+.yt-player.playing .yt-splash {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s 0.5s ease;
+}
+
+.yt-player iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.yt-player img {
+  max-width: 100%;
+  height: auto;
+  position: absolute;
+}

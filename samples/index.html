@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Plugin Example</title>
+    
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    
+    <script src="../src/jquery.ytPlayer.js"></script>
+    
+  </head>
+  <body>
+    
+    <div class="container">
+      <div class="page-header">
+        <h1>Example</h1>
+      </div>
+      <div class="yt-player" data-video-id="iXGRDof1WIc">
+        
+        <div class="yt-splash">
+          <img src="images/placeholder.jpg"/>
+          <div class="yt-controls btn-group">
+            <button class="btn btn-default yt-play">Play</button>
+            <button class="btn btn-default yt-stop">Stop</button>
+            <button class="btn btn-default yt-pause">Pause</button>
+            <button class="btn btn-default yt-toggle-play">Toggle Play</button>
+          </div>
+        </div>
+        
+        
+      </div>
+      
+    </div>
+  
+    <script>
+      $('.yt-player').ytPlayer({
+        // Example options
+      }).each(function() {
+        var
+          $player = $(this);
+        $player.find('button.yt-play').on('click', function(e) {
+          $player.ytPlayer('playVideo');
+          e.stopPropagation();
+        });
+        $player.find('button.yt-stop').on('click', function(e) {
+          $player.ytPlayer('stopVideo');
+          e.stopPropagation();
+        });
+        $player.find('button.yt-pause').on('click', function(e) {
+          $player.ytPlayer('pauseVideo');
+          e.stopPropagation();
+        });
+        $player.find('button.yt-toggle-play').on('click', function(e) {
+          $player.ytPlayer('togglePlay');
+          e.stopPropagation();
+        });
+      }).on('ytplayer:statechange', function(e) {
+        // State Change
+      }).on('click', function(e) {
+        $(this).ytPlayer('togglePlay');
+      });
+      
+      
+    </script>
+  </body>
+</html>
