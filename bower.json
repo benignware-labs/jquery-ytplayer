@@ -1,13 +1,13 @@
 {
-  "name": "yt-player",
+  "name": "jquery-yt-player",
   "version": "0.0.1",
   "description": "Wrapper for the YouTube-IFrame-API",
   "authors": [
     "Rafael Nowrotek <mail@benignware.com>"
   ],
-  "main": "src/jquery.plugin.js",
+  "main": "src/jquery.ytPlayer.js",
   "keywords": [
-    "jquery-plugin"
+    "jquery-plugin", "youtube"
   ],
   "license": "MIT",
   "ignore": [

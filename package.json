@@ -1,5 +1,5 @@
 {
-  "name": "yt-player",
+  "name": "jquery-yt-player",
   "description": "Wrapper for the YouTube-IFrame-API",
   "version": "0.0.1",
   "devDependencies": {
