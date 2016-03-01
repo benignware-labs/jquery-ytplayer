@@ -41,7 +41,7 @@
     <script>
       $('.yt-player').ytPlayer({
         // Example options
-        playFullscreen: true
+        playFullScreen: true
       }).each(function() {
         var
           $player = $(this);
@@ -68,9 +68,7 @@
       }).on('ytplayer:statechange', function(e) {
         // State Change
       }).on('click', function(e) {
-        $(this).ytPlayer('togglePlay', {
-          playFullScreen: true
-        });
+        $(this).ytPlayer('togglePlay');
       });
       
       
