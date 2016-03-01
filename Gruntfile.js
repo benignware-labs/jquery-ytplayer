@@ -27,6 +27,12 @@ module.exports = function(grunt) {
       }
     },
     qunit: {
+      options: {
+        timeout: 10000,
+        '--web-security': 'no',
+        '--local-to-remote-url-access': 'yes',
+        '--ignore-ssl-errors' : 'true' 
+      },
       all: ['test/**/*.html']
     },
     uglify: {
