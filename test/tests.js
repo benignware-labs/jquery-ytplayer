@@ -1,6 +1,6 @@
 test("default", function(assert) {
   assert.ok(
-    $('#qunit-fixture').ytPlayer().data('ytPlayer'),
+    $('#qunit-fixture').ytplayer().data('ytplayer'),
     "Instance should have been created.'"
   );
 });

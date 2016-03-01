@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
     
-    <script src="../src/jquery.ytPlayer.js"></script>
+    <script src="../src/jquery.ytplayer.js"></script>
     
   </head>
   <body>
@@ -19,19 +19,19 @@
       <div class="page-header">
         <h1>Example</h1>
       </div>
-      <div class="yt-player" data-video-id="iXGRDof1WIc">
+      <div class="ytplayer" data-video-id="iXGRDof1WIc">
         
-        <div class="yt-splash">
+        <div class="ytplayer-splash">
           <img src="images/placeholder.jpg"/>
           
         </div>
         
-        <div class="yt-controls btn-group">
-          <button class="btn btn-default yt-play"><i class="glyphicon glyphicon-play"></i></button>
-          <button class="btn btn-default yt-stop"><i class="glyphicon glyphicon-stop"></i></button>
-          <button class="btn btn-default yt-pause"><i class="glyphicon glyphicon-pause"></i></button>
-          <button class="btn btn-default yt-toggle-play"><i class="glyphicon glyphicon-play"></i></button>
-          <button class="btn btn-default yt-fullscreen"><i class="glyphicon glyphicon-fullscreen"></i></button>
+        <div class="ytplayer-controls btn-group">
+          <button class="btn btn-default ytplayer-play"><i class="glyphicon glyphicon-play"></i></button>
+          <button class="btn btn-default ytplayer-stop"><i class="glyphicon glyphicon-stop"></i></button>
+          <button class="btn btn-default ytplayer-pause"><i class="glyphicon glyphicon-pause"></i></button>
+          <button class="btn btn-default ytplayer-toggle-play"><i class="glyphicon glyphicon-play"></i></button>
+          <button class="btn btn-default ytplayer-fullscreen"><i class="glyphicon glyphicon-fullscreen"></i></button>
         </div>
         
       </div>
@@ -39,36 +39,36 @@
     </div>
   
     <script>
-      $('.yt-player').ytPlayer({
+      $('.ytplayer').ytplayer({
         // Example options
         playFullScreen: true
       }).each(function() {
         var
           $player = $(this);
-        $player.find('button.yt-play').on('click', function(e) {
-          $player.ytPlayer('playVideo');
+        $player.find('button.ytplayer-play').on('click', function(e) {
+          $player.ytplayer('playVideo');
           e.stopPropagation();
         });
-        $player.find('button.yt-stop').on('click', function(e) {
-          $player.ytPlayer('stopVideo');
+        $player.find('button.ytplayer-stop').on('click', function(e) {
+          $player.ytplayer('stopVideo');
           e.stopPropagation();
         });
-        $player.find('button.yt-pause').on('click', function(e) {
-          $player.ytPlayer('pauseVideo');
+        $player.find('button.ytplayer-pause').on('click', function(e) {
+          $player.ytplayer('pauseVideo');
           e.stopPropagation();
         });
-        $player.find('button.yt-toggle-play').on('click', function(e) {
-          $player.ytPlayer('togglePlay');
+        $player.find('button.ytplayer-toggle-play').on('click', function(e) {
+          $player.ytplayer('togglePlay');
           e.stopPropagation();
         });
-        $player.find('button.yt-fullscreen').on('click', function(e) {
-          $player.ytPlayer('toggleFullScreen');
+        $player.find('button.ytplayer-fullscreen').on('click', function(e) {
+          $player.ytplayer('toggleFullScreen');
           e.stopPropagation();
         });
       }).on('ytplayer:statechange', function(e) {
         // State Change
       }).on('click', function(e) {
-        $(this).ytPlayer('togglePlay');
+        $(this).ytplayer('togglePlay');
       });
       
       
