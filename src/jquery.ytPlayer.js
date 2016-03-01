@@ -71,9 +71,8 @@
       opts = {},
       pauseTimeout = null;
       
-      
+    
     function setState(newState) {
-      //
       if (newState !== state) {
         if (opts.events && opts.events.onStateChange) {
           opts.events.onStateChange.apply(this, [{data: newState}]);
@@ -88,6 +87,10 @@
         });
       }
       state = newState;
+      if (state === 2) {
+        // exit fullscreen
+        exitFullScreen();
+      }
     }
       
     function updatePlayer(options) {
@@ -102,11 +105,12 @@
       loadYTPlayerAPI().done(function() {
         // Load Player
         // TODO: Check if options have changed
+        // TODO: Use setOption method of player
         if ($embed && $embed.length) {
           $embed.remove();
         }
         // Create player element
-        $embed = $('<div class="yt-player-embed"></div>').prependTo($element);
+        $embed = $('<div class="' + options.embedClass + '"></div>').prependTo($element);
         var opts = $.extend(true, {}, options, {
           events: {
             'onReady': function() {
@@ -124,6 +128,8 @@
               }
             },
             'onStateChange': function(e) {
+              var
+                state = e.data;
               setState(e.data);
               $element.trigger('ytplayer:statechange', arguments);
             }
@@ -140,7 +146,7 @@
      * @param {Object} options
      */
     this.update = function(options) {
-      $.extend(true, opts, options);
+      opts = $.extend(true, opts, options);
       // Update logic
       // Init Player
       updatePlayer(opts).done(function() {
@@ -161,6 +167,10 @@
       }
       if (player && player.playVideo) {
         player.playVideo();
+        // Playing
+      }
+      if (opts.playFullScreen) {
+        requestFullScreen();
       }
     };
     
@@ -218,17 +228,90 @@
       return state;
     };
     
+    this.toggleFullScreen = function() {
+      toggleFullScreen();
+    }
+    
+    function isFullScreen() {
+      return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+    }
+    
+    function requestFullScreen() {
+      var impl = element.requestFullScreen || element.mozRequestFullScreen || element.webkitRequestFullScreen;
+      if (impl) {
+        impl.bind(element)();
+      }
+    }
+    
+    function exitFullScreen() {
+      $element.css({
+        width: '',
+        height: ''
+      });
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+    
+    function toggleFullScreen() {
+      if (isFullScreen()) {
+        exitFullScreen();
+      } else {
+        requestFullScreen();
+      }
+    }
+    
+    $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function(e) {
+      var isWebkit = 'WebkitAppearance' in document.documentElement.style;
+      // Now do something interesting
+      if (isWebkit) {
+        if (isFullScreen()) {
+          $element.css({
+            position: 'absolute',
+            top: '50%',
+            transform: 'translate(0,-50%)',
+            WebkitTransform: 'translate(0,-50%)',
+            MozTransform: 'translate(0,-50%)',
+            MsTransform: 'translate(0,-50%)',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: '100vw'
+          });
+        } else {
+          $element.css({
+            position: '',
+            top: '',
+            transform: '',
+            WebkitTransform: '',
+            MozTransform: '',
+            MsTransform: '',
+            width: '',
+            height: ''
+          });
+        }
+      }
+    });
     
     // TODO: Wrap player methods
 
 
    this.update($.extend(true, {
       // Plugin Defaults:
+      embedClass: 'yt-player-embed',
+      playFullScreen: true,
+      // YouTube Defaults
       playerStateClassPrefix: '',
       playerVars: {
         modestbranding: 1,
         controls: 0,
-        //showinfo: 0, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
+        showinfo: 0, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
         rel: 0,
         iv_load_policy: 3,
         nologo: 1,
@@ -245,8 +328,6 @@
       return result;
     })($element.data())));
   }
-  
-  
   
   
   // Add Plugin to registry

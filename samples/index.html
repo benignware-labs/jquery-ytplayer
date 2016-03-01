@@ -23,14 +23,16 @@
         
         <div class="yt-splash">
           <img src="images/placeholder.jpg"/>
-          <div class="yt-controls btn-group">
-            <button class="btn btn-default yt-play">Play</button>
-            <button class="btn btn-default yt-stop">Stop</button>
-            <button class="btn btn-default yt-pause">Pause</button>
-            <button class="btn btn-default yt-toggle-play">Toggle Play</button>
-          </div>
+          
         </div>
         
+        <div class="yt-controls btn-group">
+          <button class="btn btn-default yt-play"><i class="glyphicon glyphicon-play"></i></button>
+          <button class="btn btn-default yt-stop"><i class="glyphicon glyphicon-stop"></i></button>
+          <button class="btn btn-default yt-pause"><i class="glyphicon glyphicon-pause"></i></button>
+          <button class="btn btn-default yt-toggle-play"><i class="glyphicon glyphicon-play"></i></button>
+          <button class="btn btn-default yt-fullscreen"><i class="glyphicon glyphicon-fullscreen"></i></button>
+        </div>
         
       </div>
       
@@ -39,6 +41,7 @@
     <script>
       $('.yt-player').ytPlayer({
         // Example options
+        playFullscreen: true
       }).each(function() {
         var
           $player = $(this);
@@ -58,10 +61,16 @@
           $player.ytPlayer('togglePlay');
           e.stopPropagation();
         });
+        $player.find('button.yt-fullscreen').on('click', function(e) {
+          $player.ytPlayer('toggleFullScreen');
+          e.stopPropagation();
+        });
       }).on('ytplayer:statechange', function(e) {
         // State Change
       }).on('click', function(e) {
-        $(this).ytPlayer('togglePlay');
+        $(this).ytPlayer('togglePlay', {
+          playFullScreen: true
+        });
       });
       
       
