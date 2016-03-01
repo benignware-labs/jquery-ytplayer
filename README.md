@@ -1,7 +1,7 @@
-jquery-plugin
-=============
+jquery-ytplayer
+==============
 
-> JQuery Plugin Boilerplate
+> Wrapper for the YouTube-IFrame-API
 
 Usage
 -----
@@ -9,20 +9,20 @@ Usage
 Include dependencies
 
 ```html
-<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-<script src="dist/jquery.plugin.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+<script src="src/jquery.ytplayer.min.js"></script>
 ```
 
 Provide markup
 
 ```html
-<div class="plugin"> </div>
+<div class="ytplayer" data-video-id=""> </div>
 ```
 
 Initialize Plugin
 
 ```js
-$('.plugin').plugin();
+$('.ytplayer').ytplayer();
 ```
 
 Options
