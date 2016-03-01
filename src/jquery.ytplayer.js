@@ -230,7 +230,7 @@
     
     this.toggleFullScreen = function() {
       toggleFullScreen();
-    }
+    };
     
     function isFullScreen() {
       return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
@@ -331,14 +331,14 @@
   
   
   // Add Plugin to registry
-  $.fn.ytPlayer = function() {
+  $.fn.ytplayer = function() {
     var
       args = [].slice.call(arguments),
       result = this;
     this.each(function() {
       var r = (function(instance) {
         // Update or init plugin
-        $(this).data('ytPlayer', instance = instance ? typeof args[0] === 'object' && instance.update(args[0]) && instance || instance : new YTPlayer(this, args[0]));
+        $(this).data('ytplayer', instance = instance ? typeof args[0] === 'object' && instance.update(args[0]) && instance || instance : new YTPlayer(this, args[0]));
         // Call method
         // TODO: Serve as wrapper for player object too
         if (typeof args[0] === 'string' && typeof instance[args[0]] === 'function') {
@@ -347,7 +347,7 @@
             result = r;
           }
         } 
-      }).call(this, $(this).data('ytPlayer'));
+      }).call(this, $(this).data('ytplayer'));
     });
     return result;
   };
