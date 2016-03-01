@@ -12,6 +12,8 @@
   }
 }(function ($) {
   
+  var
+    location = window.location;
   
   var camelize = function(string) {
     return string.replace(/(\-[a-z])/g, function($1) { return $1.toUpperCase().replace('-',''); });
@@ -64,6 +66,7 @@
       states = ['unstarted', 'ended', 'playing', 'paused', 'buffering', undefined, 'cued'],
       state = -1,
       $element = $(element),
+      $wrapper = null,
       $embed = null,
       player = null,
       playerReady = false,
@@ -80,16 +83,18 @@
       }
       var playerState = player && player.getPlayerState && player.getPlayerState();
       if (newState !== state || newState !== playerState) {
+        // State Change
         states.forEach(function(name, index) {
           if (name) {
             $element.toggleClass(opts.playerStateClassPrefix + name, newState === index - 1);
           }
         });
-      }
-      state = newState;
-      if (opts.playFullScreen && (state === 2 || state === 0)) {
-        // exit fullscreen
-        exitFullScreen();
+        $element.trigger('ytplayer:statechange', newState);
+        state = newState;
+        if (opts.fullscreen === 'auto' && (state === 2 || state === 0)) {
+          // exit fullscreen
+          exitFullScreen();
+        }
       }
     }
       
@@ -102,7 +107,8 @@
         return deferred.promise();
       }
         
-      loadYTPlayerAPI().done(function() {
+      loadYTPlayerAPI().done(function(YT) {
+        $element.trigger('ytplayer:api', YT);
         // Load Player
         // TODO: Check if options have changed
         // TODO: Use setOption method of player
@@ -110,7 +116,8 @@
           $embed.remove();
         }
         // Create player element
-        $embed = $('<div class="' + options.embedClass + '"></div>').prependTo($element);
+        $embed = $('<div class="' + options.embedClass + '"></div>');
+        $wrapper = $('<div class="' + options.wrapperClass + '"></div>').append($embed).prependTo($element);
         var opts = $.extend(true, {}, options, {
           events: {
             'onReady': function() {
@@ -124,14 +131,13 @@
                 if (options.events && options.events.onReady) {
                   options.events.onReady.apply(this, arguments);
                 }
-                $element.trigger('ytplayer:ready', arguments);
+                $element.trigger('ytplayer:ready', instance);
               }
             },
             'onStateChange': function(e) {
               var
                 state = e.data;
               setState(e.data);
-              $element.trigger('ytplayer:statechange', arguments);
             }
           }
         });
@@ -169,7 +175,7 @@
         player.playVideo();
         // Playing
       }
-      if (opts.playFullScreen) {
+      if (opts.fullscreen === 'auto' && 'ontouchstart' in window) {
         requestFullScreen();
       }
     };
@@ -201,7 +207,7 @@
         if (!triggerPlay && state === 2 && player && player.getPlayerState && player.getPlayerState() !== 2 && player.pauseVideo) {
           player.pauseVideo();
         }
-      }, 50);
+      }, 100);
     };
     
     /**
@@ -304,14 +310,17 @@
 
    this.update($.extend(true, {
       // Plugin Defaults:
-      embedClass: 'yt-player-embed',
+      embedClass: 'ytplayer-embed',
+      wrapperClass: 'ytplayer-wrapper',
       playFullScreen: false,
       // YouTube Defaults
       playerStateClassPrefix: '',
       playerVars: {
-        modestbranding: 1,
+        enablejsapi: 1,
+        origin: location.protocol.match(/http/) ? location.protocol + "://" + location.hostname + (location.port ? ":" + location.port : '') : undefined,
+        modestbranding: 0,
         controls: 0,
-        showinfo: 0, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
+        showinfo: 1, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
         rel: 0,
         iv_load_policy: 3,
         nologo: 1,
