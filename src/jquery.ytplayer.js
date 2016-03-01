@@ -32,8 +32,10 @@
       if (window.YT) {
         // Already loaded, resolve immediately
         deferred.resolve(window.YT);
-        return;
+        return deferred.promise();
       }
+      
+      // FIXME: Add listeners
       
       // Register global callback
       window.onYouTubeIframeAPIReady = function() {
@@ -91,7 +93,7 @@
         });
         $element.trigger('ytplayer:statechange', newState);
         state = newState;
-        if (opts.fullscreen === 'auto' && (state === 2 || state === 0)) {
+        if (opts.fullScreen === 'auto' && (state === 2 || state === 0)) {
           // exit fullscreen
           exitFullScreen();
         }
@@ -101,47 +103,57 @@
     function updatePlayer(options) {
       var
         deferred = $.Deferred();
-        
-      if (playerReady) {
-        deferred.resolve(player);
-        return deferred.promise();
-      }
-        
+     
       loadYTPlayerAPI().done(function(YT) {
-        $element.trigger('ytplayer:api', YT);
-        // Load Player
-        // TODO: Check if options have changed
-        // TODO: Use setOption method of player
-        if ($embed && $embed.length) {
-          $embed.remove();
-        }
-        // Create player element
-        $embed = $('<div class="' + options.embedClass + '"></div>');
-        $wrapper = $('<div class="' + options.wrapperClass + '"></div>').append($embed).prependTo($element);
-        var opts = $.extend(true, {}, options, {
-          events: {
-            'onReady': function() {
-              if (!playerReady) {
-                playerReady = true;
-                if (triggerPlay) {
-                  // Playing was requested
-                  instance.playVideo();
-                }
-                deferred.resolve(player);
-                if (options.events && options.events.onReady) {
-                  options.events.onReady.apply(this, arguments);
-                }
-                $element.trigger('ytplayer:ready', instance);
-              }
-            },
-            'onStateChange': function(e) {
-              var
-                state = e.data;
-              setState(e.data);
-            }
+        if (!player) {
+          // Load Player
+          // TODO: Check if options have changed
+          // TODO: Use setOption method of player
+          if ($embed && $embed.length) {
+            $embed.remove();
           }
-        });
-        player = new YT.Player($embed[0], opts);
+          var
+            embedClass = 'ytplayer-embed',
+            wrapperClass = 'ytplayer-wrapper';
+          // Create player element
+          $embed = $('<div class="' + embedClass + '"></div>');
+          $wrapper = $('<div class="' + wrapperClass + '"></div>').append($embed).prependTo($element);
+          var opts = $.extend(true, {}, options, {
+            events: {
+              'onReady': function() {
+                if (!playerReady) {
+                  playerReady = true;
+                  if (triggerPlay) {
+                    // Playing was requested
+                    instance.playVideo();
+                  }
+                  deferred.resolve(player);
+                  if (options.events && options.events.onReady) {
+                    options.events.onReady.apply(this, arguments);
+                  }
+                  $element.trigger('ytplayer:ready', instance);
+                }
+              },
+              'onStateChange': function(e) {
+                var
+                  state = e.data;
+                setState(e.data);
+              }
+            }
+          });
+          player = new YT.Player($embed[0], opts);
+        } else {
+          // Player exists
+          for (var name in options) {
+            player.setOption(name, options[name]);
+          }
+          if (options.fullScreen && options.fullScreen !== 'auto') {
+            requestFullScreen();
+          } else {
+            exitFullScreen();
+          }
+        }
+        
       });
       
       return deferred.promise();
@@ -156,7 +168,7 @@
       // Update logic
       // Init Player
       updatePlayer(opts).done(function() {
-        // Player Ready
+        // Update Player Ready
       });
     };
     
@@ -175,7 +187,7 @@
         player.playVideo();
         // Playing
       }
-      if (opts.fullscreen === 'auto' && 'ontouchstart' in window) {
+      if (opts.fullScreen === 'auto' && 'ontouchstart' in window) {
         requestFullScreen();
       }
     };
