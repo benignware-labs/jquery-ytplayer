@@ -1,5 +1,9 @@
 .ytplayer {
+  width: 480px;
   position: relative;
+}
+
+.ytplayer-wrapper {
   padding-bottom: 56.25%; /* Default for 1600x900 videos 16:9 ratio*/
   padding-top: 0px;
   height: 0;
@@ -13,7 +17,7 @@
 }
 
 .ytplayer-splash {
-  background: #fff;
+  background: #000;
   position: absolute;
   top: 0;
   left: 0;
@@ -23,7 +27,25 @@
   visibility: visible;
   transition: opacity 0.5s ease, visibility 0s 0s ease;
   -webkit-transition: opacity 0.5s ease, visibility 0s 0s ease;
-  display: none;
+  opacity: 1;
+}
+
+.ytplayer.playing .ytplayer-splash {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s 0s ease;
+  -webkit-transition: opacity 0.5s ease, visibility 0.5s 0s ease;
+}
+
+
+.ytplayer-splash img {
+  max-width: 100%;
+  height: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  -webkit-transform: translate(-50%,-50%);
 }
 
 /*
@@ -41,12 +63,6 @@
   height: 100%;
 }
 
-.ytplayer img {
-  max-width: 100%;
-  height: auto;
-  position: absolute;
-  display: none;
-}
 
 .ytplayer.buffering:before {
   content: "";
