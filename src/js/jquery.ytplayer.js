@@ -12,6 +12,8 @@
   }
 }(function ($) {
   
+  var
+    location = window.location;
   
   var camelize = function(string) {
     return string.replace(/(\-[a-z])/g, function($1) { return $1.toUpperCase().replace('-',''); });
@@ -30,8 +32,10 @@
       if (window.YT) {
         // Already loaded, resolve immediately
         deferred.resolve(window.YT);
-        return;
+        return deferred.promise();
       }
+      
+      // FIXME: Add listeners
       
       // Register global callback
       window.onYouTubeIframeAPIReady = function() {
@@ -64,6 +68,7 @@
       states = ['unstarted', 'ended', 'playing', 'paused', 'buffering', undefined, 'cued'],
       state = -1,
       $element = $(element),
+      $wrapper = null,
       $embed = null,
       player = null,
       playerReady = false,
@@ -71,9 +76,8 @@
       opts = {},
       pauseTimeout = null;
       
-      
+    
     function setState(newState) {
-      //
       if (newState !== state) {
         if (opts.events && opts.events.onStateChange) {
           opts.events.onStateChange.apply(this, [{data: newState}]);
@@ -81,55 +85,75 @@
       }
       var playerState = player && player.getPlayerState && player.getPlayerState();
       if (newState !== state || newState !== playerState) {
+        // State Change
         states.forEach(function(name, index) {
           if (name) {
             $element.toggleClass(opts.playerStateClassPrefix + name, newState === index - 1);
           }
         });
+        $element.trigger('ytplayer:statechange', newState);
+        state = newState;
+        if (opts.fullScreen === 'auto' && (state === 2 || state === 0)) {
+          // exit fullscreen
+          exitFullScreen();
+        }
       }
-      state = newState;
     }
       
     function updatePlayer(options) {
       var
         deferred = $.Deferred();
-        
-      if (playerReady) {
-        deferred.resolve(player);
-        return deferred.promise();
-      }
-        
-      loadYTPlayerAPI().done(function() {
-        // Load Player
-        // TODO: Check if options have changed
-        if ($embed && $embed.length) {
-          $embed.remove();
-        }
-        // Create player element
-        $embed = $('<div class="yt-player-embed"></div>').prependTo($element);
-        var opts = $.extend(true, {}, options, {
-          events: {
-            'onReady': function() {
-              if (!playerReady) {
-                playerReady = true;
-                if (triggerPlay) {
-                  // Playing was requested
-                  instance.playVideo();
-                }
-                deferred.resolve(player);
-                if (options.events && options.events.onReady) {
-                  options.events.onReady.apply(this, arguments);
-                }
-                $element.trigger('ytplayer:ready', arguments);
-              }
-            },
-            'onStateChange': function(e) {
-              setState(e.data);
-              $element.trigger('ytplayer:statechange', arguments);
-            }
+     
+      loadYTPlayerAPI().done(function(YT) {
+        if (!player) {
+          // Load Player
+          // TODO: Check if options have changed
+          // TODO: Use setOption method of player
+          if ($embed && $embed.length) {
+            $embed.remove();
           }
-        });
-        player = new YT.Player($embed[0], opts);
+          var
+            embedClass = 'ytplayer-embed',
+            wrapperClass = 'ytplayer-wrapper';
+          // Create player element
+          $embed = $('<div class="' + embedClass + '"></div>');
+          $wrapper = $('<div class="' + wrapperClass + '"></div>').append($embed).prependTo($element);
+          var opts = $.extend(true, {}, options, {
+            events: {
+              'onReady': function() {
+                if (!playerReady) {
+                  playerReady = true;
+                  if (triggerPlay) {
+                    // Playing was requested
+                    instance.playVideo();
+                  }
+                  deferred.resolve(player);
+                  if (options.events && options.events.onReady) {
+                    options.events.onReady.apply(this, arguments);
+                  }
+                  $element.trigger('ytplayer:ready', instance);
+                }
+              },
+              'onStateChange': function(e) {
+                var
+                  state = e.data;
+                setState(e.data);
+              }
+            }
+          });
+          player = new YT.Player($embed[0], opts);
+        } else {
+          // Player exists
+          for (var name in options) {
+            player.setOption(name, options[name]);
+          }
+          if (options.fullScreen && options.fullScreen !== 'auto') {
+            requestFullScreen();
+          } else {
+            exitFullScreen();
+          }
+        }
+        
       });
       
       return deferred.promise();
@@ -140,11 +164,11 @@
      * @param {Object} options
      */
     this.update = function(options) {
-      $.extend(true, opts, options);
+      opts = $.extend(true, opts, options);
       // Update logic
       // Init Player
       updatePlayer(opts).done(function() {
-        // Player Ready
+        // Update Player Ready
       });
     };
     
@@ -161,6 +185,10 @@
       }
       if (player && player.playVideo) {
         player.playVideo();
+        // Playing
+      }
+      if (opts.fullScreen === 'auto' && 'ontouchstart' in window) {
+        requestFullScreen();
       }
     };
     
@@ -191,7 +219,7 @@
         if (!triggerPlay && state === 2 && player && player.getPlayerState && player.getPlayerState() !== 2 && player.pauseVideo) {
           player.pauseVideo();
         }
-      }, 50);
+      }, 100);
     };
     
     /**
@@ -218,17 +246,93 @@
       return state;
     };
     
+    this.toggleFullScreen = function() {
+      toggleFullScreen();
+    };
+    
+    function isFullScreen() {
+      return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+    }
+    
+    function requestFullScreen() {
+      var impl = element.requestFullScreen || element.mozRequestFullScreen || element.webkitRequestFullScreen;
+      if (impl) {
+        impl.bind(element)();
+      }
+    }
+    
+    function exitFullScreen() {
+      $element.css({
+        width: '',
+        height: ''
+      });
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+    
+    function toggleFullScreen() {
+      if (isFullScreen()) {
+        exitFullScreen();
+      } else {
+        requestFullScreen();
+      }
+    }
+    
+    $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function(e) {
+      var isWebkit = 'WebkitAppearance' in document.documentElement.style;
+      // Now do something interesting
+      if (isWebkit) {
+        if (isFullScreen()) {
+          $element.css({
+            position: 'absolute',
+            top: '50%',
+            transform: 'translate(0,-50%)',
+            WebkitTransform: 'translate(0,-50%)',
+            MozTransform: 'translate(0,-50%)',
+            MsTransform: 'translate(0,-50%)',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: '100vw'
+          });
+        } else {
+          $element.css({
+            position: '',
+            top: '',
+            transform: '',
+            WebkitTransform: '',
+            MozTransform: '',
+            MsTransform: '',
+            width: '',
+            height: ''
+          });
+        }
+      }
+    });
     
     // TODO: Wrap player methods
 
 
    this.update($.extend(true, {
       // Plugin Defaults:
+      embedClass: 'ytplayer-embed',
+      wrapperClass: 'ytplayer-wrapper',
+      playFullScreen: false,
+      // YouTube Defaults
       playerStateClassPrefix: '',
       playerVars: {
-        modestbranding: 1,
+        enablejsapi: 1,
+        origin: location.protocol.match(/http/) ? location.protocol + "://" + location.hostname + (location.port ? ":" + location.port : '') : undefined,
+        modestbranding: 0,
         controls: 0,
-        //showinfo: 0, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
+        showinfo: 1, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
         rel: 0,
         iv_load_policy: 3,
         nologo: 1,
@@ -247,23 +351,24 @@
   }
   
   
-  
-  
   // Add Plugin to registry
-  $.fn.ytPlayer = function() {
+  $.fn.ytplayer = function() {
     var
       args = [].slice.call(arguments),
       result = this;
     this.each(function() {
-      return (function(instance) {
+      var r = (function(instance) {
         // Update or init plugin
-        $(this).data('ytPlayer', instance = instance ? typeof args[0] === 'object' && instance.update(args[0]) && instance || instance : new YTPlayer(this, args[0]));
+        $(this).data('ytplayer', instance = instance ? typeof args[0] === 'object' && instance.update(args[0]) && instance || instance : new YTPlayer(this, args[0]));
         // Call method
         // TODO: Serve as wrapper for player object too
-        result = typeof args[0] === 'string' && typeof instance[args[0]] === 'function' ? instance[args[0]].apply(instance, args.slice(1)) : result;
-        // Return undefined or chaining element
-        return typeof result !== 'undefined' ? result : this;
-      }).call(this, $(this).data('ytPlayer'));
+        if (typeof args[0] === 'string' && typeof instance[args[0]] === 'function') {
+          var r = instance[args[0]].apply(instance, args.slice(1));
+          if (result === this && typeof r !== 'undefined') {
+            result = r;
+          }
+        } 
+      }).call(this, $(this).data('ytplayer'));
     });
     return result;
   };
