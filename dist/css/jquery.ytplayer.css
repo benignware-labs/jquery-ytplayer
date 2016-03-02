@@ -3,20 +3,20 @@
   position: relative;
 }
 
-.ytplayer-wrapper {
+.ytplayer .ytplayer-wrapper {
   padding-bottom: 56.25%; /* Default for 1600x900 videos 16:9 ratio*/
   padding-top: 0px;
   height: 0;
   overflow: hidden;
 }
 
-.ytplayer-controls {
+.ytplayer .ytplayer-controls {
   padding: 15px;
   position: absolute;
   bottom: 0;
 }
 
-.ytplayer-splash {
+.ytplayer .ytplayer-splash {
   background: #000;
   position: absolute;
   top: 0;
@@ -37,8 +37,7 @@
   -webkit-transition: opacity 0.5s ease, visibility 0.5s 0s ease;
 }
 
-
-.ytplayer-splash img {
+.ytplayer .ytplayer-splash img {
   max-width: 100%;
   height: auto;
   position: absolute;
@@ -47,13 +46,6 @@
   transform: translate(-50%,-50%);
   -webkit-transform: translate(-50%,-50%);
 }
-
-/*
-.ytplayer.playing .yt-splash {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.5s ease, visibility 0s 0.5s ease;
-}*/
 
 .ytplayer iframe {
   position: absolute;
@@ -85,7 +77,7 @@
 }
 
 
-
+/* Spinner Animation */
 @keyframes cssload-spin {
   100%{ transform: rotate(360deg); transform: rotate(360deg); }
 }
