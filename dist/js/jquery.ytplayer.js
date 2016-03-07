@@ -76,24 +76,38 @@
       opts = {},
       pauseTimeout = null;
       
+    function applyStateClass(state) {
+      if (typeof opts.playerStatePrefix === 'string' || opts.playerStatePrefix) {
+        states.forEach(function(name, index) {
+          if (name) {
+            $element.toggleClass(opts.playerStatePrefix ? opts.playerStatePrefix + name : name, state === index - 1);
+          }
+        });
+      }
+    }
     
     function setState(newState) {
-      if (newState !== state) {
-        if (opts.events && opts.events.onStateChange) {
-          opts.events.onStateChange.apply(this, [{data: newState}]);
-        }
-      }
       var playerState = player && player.getPlayerState && player.getPlayerState();
       if (newState !== state || newState !== playerState) {
         // State Change
-        states.forEach(function(name, index) {
-          if (name) {
-            $element.toggleClass(opts.playerStateClassPrefix + name, newState === index - 1);
-          }
-        });
+        
+        // Apply State CSS-Class
+        applyStateClass.call(this, newState);
+        
+        // Trigger option callback
+        if (opts.events && opts.events.onStateChange) {
+          opts.events.onStateChange.apply(this, [{data: newState}]);
+        }
+        
+        // Trigger event
         $element.trigger('ytplayer:statechange', newState);
+        
+        // Apply new state
         state = newState;
-        if (opts.fullScreen === 'auto' && (state === 2 || state === 0)) {
+        
+        // Process options
+        if ('ontouchstart' in window && opts.fullScreen === 'auto' && (state === 2 || state === 0)) {
+          // Paused
           // exit fullscreen
           exitFullScreen();
         }
@@ -105,7 +119,7 @@
         deferred = $.Deferred();
      
       loadYTPlayerAPI().done(function(YT) {
-        if (!player) {
+        //if (!player) {
           // Load Player
           // TODO: Check if options have changed
           // TODO: Use setOption method of player
@@ -127,11 +141,11 @@
                     // Playing was requested
                     instance.playVideo();
                   }
-                  deferred.resolve(player);
                   if (options.events && options.events.onReady) {
                     options.events.onReady.apply(this, arguments);
                   }
                   $element.trigger('ytplayer:ready', instance);
+                  deferred.resolve(player);
                 }
               },
               'onStateChange': function(e) {
@@ -142,18 +156,17 @@
             }
           });
           player = new YT.Player($embed[0], opts);
-        } else {
+        /*} else {
           // Player exists
           for (var name in options) {
             player.setOption(name, options[name]);
           }
-          if (options.fullScreen && options.fullScreen !== 'auto') {
-            requestFullScreen();
-          } else {
-            exitFullScreen();
-          }
+        }*/
+        if (options.fullScreen && options.fullScreen !== 'auto' || options.fullScreen === 'auto' && 'ontouchstart' in window) {
+          requestFullScreen();
+        } else {
+          exitFullScreen();
         }
-        
       });
       
       return deferred.promise();
@@ -187,9 +200,6 @@
         player.playVideo();
         // Playing
       }
-      if (opts.fullScreen === 'auto' && 'ontouchstart' in window) {
-        requestFullScreen();
-      }
     };
     
     /**
@@ -219,7 +229,7 @@
         if (!triggerPlay && state === 2 && player && player.getPlayerState && player.getPlayerState() !== 2 && player.pauseVideo) {
           player.pauseVideo();
         }
-      }, 100);
+      }, 50);
     };
     
     /**
@@ -246,6 +256,16 @@
       return state;
     };
     
+    /**
+     * Example method
+     * @param {String} bar
+     */
+    this.setOption = function(name, value) {
+      this.update({
+        name: value
+      });
+    };
+    
     this.toggleFullScreen = function() {
       toggleFullScreen();
     };
@@ -255,7 +275,7 @@
     }
     
     function requestFullScreen() {
-      var impl = element.requestFullScreen || element.mozRequestFullScreen || element.webkitRequestFullScreen;
+      var impl = element.webkitEnterFullscreen || element.requestFullScreen || element.mozRequestFullScreen || element.webkitRequestFullScreen;
       if (impl) {
         impl.bind(element)();
       }
@@ -320,24 +340,29 @@
     // TODO: Wrap player methods
 
 
+   // Apply Initial State CSS-Class
+   //applyStateClass.call(this, state);
+
+   // Initial update
    this.update($.extend(true, {
       // Plugin Defaults:
       embedClass: 'ytplayer-embed',
       wrapperClass: 'ytplayer-wrapper',
-      playFullScreen: false,
+      fullScreen: 'auto',
       // YouTube Defaults
-      playerStateClassPrefix: '',
+      playerStatePrefix: 'ytplayer-state-',
       playerVars: {
         enablejsapi: 1,
         origin: location.protocol.match(/http/) ? location.protocol + "://" + location.hostname + (location.port ? ":" + location.port : '') : undefined,
         modestbranding: 0,
-        controls: 0,
-        showinfo: 1, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
+        controls: 1,
+        showinfo: 0, // http://stackoverflow.com/questions/12537535/embedded-youtube-video-showinfo-incompatible-with-modestbranding
         rel: 0,
         iv_load_policy: 3,
         nologo: 1,
         autohide: 1,
-        fs: 0
+        fs: 1,
+        playsinline: 0
       }
     }, options, (function(options) {
       var

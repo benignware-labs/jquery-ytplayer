@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no, minimal-ui"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <title>Plugin Example</title>
+    
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../dist/css/jquery.ytplayer.css">
+    
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    
+    <script src="../dist/js/jquery.ytplayer.js"></script>
+    
+  </head>
+  <body>
+    
+    <div class="container">
+      <div class="page-header">
+        <h1>Example</h1>
+      </div>
+      
+      
+      <div class="ytplayer" data-video-id="bHQqvYy5KYo">
+        <div class="ytplayer-splash">
+          <img class="ytplayer-placeholder" src="http://img.youtube.com/vi/bHQqvYy5KYo/maxresdefault.jpg"/>
+          <div class="ytplayer-content">
+            <h4>YouTube IFrame API</h4>
+            <p>This video demonstrates the benefits of the iframe api and shows how to use it</p>
+            <div class="ytplayer-controls btn-group">
+              <button class="btn btn-default btn-toggle-play"><i class="glyphicon glyphicon-play"></i></button>
+              <button class="btn btn-default btn-toggle-fs"><i class="glyphicon glyphicon-fullscreen"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <script>
+      $('.ytplayer').ytplayer({
+        // Example options
+      }).each(function() {
+        var
+          $player = $(this);
+        $player.find('.btn-toggle-play').on('click', function(e) {
+          $player.ytplayer('togglePlay');
+          e.stopPropagation();
+        });
+        $player.find('.btn-toggle-fs').on('click', function(e) {
+          $player.ytplayer('toggleFullScreen');
+          e.stopPropagation();
+        });
+      }).on('ytplayer:statechange', function(e, state) {
+        // State Change
+        var $icon = $(this).find('.btn-toggle-play').find("*[class*='glyphicon']");
+        if (state === 3 || state === 1) {
+          $icon.addClass('glyphicon-pause');
+          $icon.removeClass('glyphicon-play');
+        } else {
+          $icon.addClass('glyphicon-play');
+          $icon.removeClass('glyphicon-pause');
+        }
+      }).on('click', function(e) {
+        //$(this).ytplayer('togglePlay');
+      });
+      
+      
+    </script>
+    
+    </div>
+  
+    
+  </body>
+</html>
